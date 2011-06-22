@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Ovherinnering</string>
+    <string name="app_name">OV-Herinnering</string>
+    <string name="main_ok">OK</string>
+    <string name="main_where_to">Waar stap je uit?</string>
 </resources>
