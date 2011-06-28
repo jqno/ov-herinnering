@@ -13,7 +13,7 @@ class MainActivity extends Activity with FindView {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
 
-    findView[Button](R.id.main_ok).onClick { view: View =>
+    findView[Button](R.id.main_ok).onClick { _ =>
       val city = findView[EditText](R.id.main_city)
       Toast.makeText(this, city.getText.toString, Toast.LENGTH_LONG).show
     }

@@ -5,7 +5,7 @@ import _root_.android.view.View
 import _root_.android.view.View.OnClickListener
 
 trait FindView extends Activity {
-  def findView[WidgetType](id: Int): WidgetType = findViewById(id).asInstanceOf[WidgetType]
+  def findView[WidgetType <: View](id: Int): WidgetType = findViewById(id).asInstanceOf[WidgetType]
 }
 
 class ViewWithOnClick(view: View) {
