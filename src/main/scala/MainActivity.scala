@@ -21,12 +21,12 @@
  */
 package nl.jqno.ovherinnering
 
-import _root_.android.app.Activity
-import _root_.android.os.Bundle
-import _root_.android.view.View
-import _root_.android.widget.Button
-import _root_.android.widget.EditText
-import _root_.android.widget.Toast
+import android.app.Activity
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
 import FindView._
 
 class MainActivity extends Activity with FindView {
