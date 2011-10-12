@@ -1,10 +1,15 @@
-<manifest 
-package="nl.jqno.ovherinnering.tests" xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest package="nl.jqno.ovherinnering.tests" xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-sdk android:minSdkVersion="8"></uses-sdk>
     <application>
         <uses-library android:name="android.test.runner"></uses-library>
+        <activity android:name=".MainActivity" android:label="@string/app_name">
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN"/>
+               <category android:name="android.intent.category.LAUNCHER"/>
+           </intent-filter>
+        </activity>
     </application>
     <instrumentation 
-    android:targetPackage="nl.jqno.ovherinnering" android:name="android.test.InstrumentationTestRunner" android:label="Tests">
+    android:label="Tests" android:targetPackage="nl.jqno.ovherinnering" android:name="android.test.InstrumentationTestRunner">
 </instrumentation>
 </manifest>

@@ -21,20 +21,37 @@
  */
 import sbt._
 
-trait Defaults {
-  def androidPlatformName = "android-8"
+import Keys._
+import AndroidKeys._
+
+object General {
+  val settings = Defaults.defaultSettings ++ Seq (
+    name := "OV-Herinnering",
+    version := "0.1",
+    scalaVersion := "2.9.0-1",
+    platformName in Android := "android-8"
+  )
+
+  lazy val fullAndroidSettings =
+    General.settings ++
+    AndroidProject.androidSettings ++
+    TypedResources.settings ++
+    AndroidMarketPublish.settings ++ Seq (
+      keyalias in Android := "change-me",
+      libraryDependencies += "org.scalatest" %% "scalatest" % "1.6.1" % "test"
+    )
 }
-class Ovherinnering(info: ProjectInfo) extends ParentProject(info) {
-  override def shouldCheckOutputDirectories = false
-  override def updateAction = task { None }
 
-  lazy val main  = project(".", "ovherinnering", new MainProject(_))
-  lazy val tests = project("tests",  "tests", new TestProject(_), main)
+object AndroidBuild extends Build {
+  lazy val main = Project (
+    "OV-Herinnering",
+    file("."),
+    settings = General.fullAndroidSettings
+  )
 
-  class MainProject(info: ProjectInfo) extends AndroidProject(info) with Defaults with MarketPublish {
-    val keyalias  = "change-me"
-    val scalatest = "org.scalatest" % "scalatest" % "1.0" % "test"
-  }
-
-  class TestProject(info: ProjectInfo) extends AndroidTestProject(info) with Defaults
+  lazy val tests = Project (
+    "tests",
+    file("tests"),
+    settings = General.settings ++ AndroidTest.androidSettings
+  ) dependsOn main
 }
