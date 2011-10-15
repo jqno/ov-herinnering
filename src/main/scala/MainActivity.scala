@@ -85,12 +85,8 @@ class MainActivity extends Activity with FindView {
       case Some(s) => s.isActive
       case None    => false
     }
-    val inactiveVisibility = if (active) View.GONE else View.VISIBLE
-    val activeVisibility =   if (active) View.VISIBLE else View.GONE
-    find(R.id.main_city) setVisibility inactiveVisibility
-    find(R.id.main_ok)   setVisibility inactiveVisibility
-    find(R.id.main_text) setVisibility activeVisibility
-    find(R.id.main_stop) setVisibility activeVisibility
+    find(R.id.main_active)   setVisibility (if (active) View.VISIBLE else View.GONE)
+    find(R.id.main_inactive) setVisibility (if (active) View.GONE else View.VISIBLE)
   }
 
   private var locationService: Option[LocationService] = None
