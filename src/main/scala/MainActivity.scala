@@ -22,53 +22,103 @@
 package nl.jqno.ovherinnering
 
 import android.app.Activity
-import android.content.Intent
-import android.os.Bundle
+import android.content._
+import android.os._
 import android.view.View
 import android.widget._
 import FindView._
 import Station._
 
 class MainActivity extends Activity with FindView {
-  var active = false
   var station: Option[String] = None
+  var isBound = false
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
 
-    val city = findView[AutoCompleteTextView](R.id.main_city)
-    city setAdapter new ArrayAdapter(this, R.layout.city_item, STATIONS)
+    bindLocationService
+    initializeAutoCompleter
+    initializeEventHandlers
+  }
 
-    findView[Button](R.id.main_ok).onClick { _ => start }
-    findView[Button](R.id.main_stop).onClick { _ => stop }
+  override def onDestroy {
+    super.onDestroy
+    locationService match {
+      case Some(service) =>
+        if (service.isActive) unbindLocationService
+      case None => ()
+    }
   }
 
   def start {
     val city = findView[EditText](R.id.main_city).getText.toString
     if (STATIONS contains city) {
-      station = Some(city)
-      findView[TextView](R.id.main_text) setText city
-      active = true
-      toggle
-      startService(new Intent(this, classOf[LocationService]))
+      locationService match {
+        case Some(service) =>
+          station = Some(city)
+          findView[TextView](R.id.main_text) setText city
+          service.activate
+          toggleUi
+        case None => ()
+      }
     }
     else
       Toast.makeText(this, "Hela wel iets fatsoenlijks intikken hoor.", Toast.LENGTH_LONG).show
   }
 
   def stop {
-    active = false
-    toggle
-    stopService(new Intent(this, classOf[LocationService]))
+    locationService match {
+      case Some(service) =>
+        service.deactivate
+        toggleUi
+      case None => ()
+    }
   }
 
-  def toggle {
+  def bindLocationService {
+    val serviceIntent = new Intent(this, classOf[LocationService])
+    bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE)
+    isBound = true
+  }
+
+  def unbindLocationService = if (isBound) {
+    unbindService(connection)
+    isBound = false
+  }
+
+  def initializeAutoCompleter =
+    findView[AutoCompleteTextView](R.id.main_city) setAdapter new ArrayAdapter(this, R.layout.city_item, STATIONS)
+
+  def initializeEventHandlers {
+    findView[Button](R.id.main_ok).onClick { _ => start }
+    findView[Button](R.id.main_stop).onClick { _ => stop }
+  }
+
+  def toggleUi {
+    val active = locationService match {
+      case Some(s) => s.isActive
+      case None    => false
+    }
     val inactiveVisibility = if (active) View.GONE else View.VISIBLE
     val activeVisibility =   if (active) View.VISIBLE else View.GONE
     find(R.id.main_city) setVisibility inactiveVisibility
     find(R.id.main_ok)   setVisibility inactiveVisibility
     find(R.id.main_text) setVisibility activeVisibility
     find(R.id.main_stop) setVisibility activeVisibility
+  }
+
+  private var locationService: Option[LocationService] = None
+
+  val connection = new ServiceConnection {
+    override def onServiceConnected(className: ComponentName, binder: IBinder) {
+      locationService = Some(binder.asInstanceOf[LocationService#LocalBinder].getService)
+      toggleUi
+    }
+
+    override def onServiceDisconnected(className: ComponentName) {
+      locationService = None
+      toggleUi
+    }
   }
 }

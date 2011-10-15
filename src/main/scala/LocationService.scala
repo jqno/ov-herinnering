@@ -21,16 +21,45 @@
  */
 package nl.jqno.ovherinnering
 
-import android.app.Service
+import android.app._
 import android.content.Intent
-import android.os.IBinder
+import android.os._
 import android.widget.Toast
 
 class LocationService extends Service {
-  override def onBind(intent: Intent): IBinder = null
+  private val ID = 1337
 
-  override def onCreate  = Toast.makeText(this, "CREATED", Toast.LENGTH_LONG).show
-  override def onDestroy = Toast.makeText(this, "DESTROYED", Toast.LENGTH_LONG).show
-  override def onStart(intent: Intent, startId: Int) =
-    Toast.makeText(this, "STARTED", Toast.LENGTH_LONG).show
+  override def onStartCommand(intent: Intent, flags: Int, startId: Int): Int = Service.START_STICKY
+
+  override def onDestroy = Toast.makeText(this, "DESTRO", Toast.LENGTH_SHORT).show
+
+  private var active = false
+
+  def isActive: Boolean = active
+
+  def activate {
+    startForeground(ID, notification)
+    active = true
+  }
+
+  def deactivate {
+    active = false
+    stopForeground(true)
+  }
+
+  def notification: Notification = {
+    val text = getText(R.string.notification_active)
+    val n = new Notification(R.drawable.app_icon, text, System.currentTimeMillis)
+    val i = PendingIntent.getActivity(this, 0, new Intent(this, classOf[MainActivity]), 0)
+    n.setLatestEventInfo(this, text, text, i)
+    return n
+  }
+
+  class LocalBinder extends Binder {
+    def getService: LocationService = LocationService.this
+  }
+
+  val binder = new LocalBinder
+
+  override def onBind(intent: Intent): IBinder = binder
 }
