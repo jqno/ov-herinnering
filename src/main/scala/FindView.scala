@@ -27,6 +27,7 @@ import android.view.View.OnClickListener
 
 trait FindView extends Activity {
   def findView[WidgetType <: View](id: Int): WidgetType = findViewById(id).asInstanceOf[WidgetType]
+  def find(id: Int): View = findView[View](id)
 }
 
 class ViewWithOnClick(view: View) {
