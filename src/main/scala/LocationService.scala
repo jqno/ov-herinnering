@@ -45,10 +45,10 @@ class LocationService extends Service {
 
   def notification: Notification = {
     val text = getText(R.string.notification_active)
-    val n = new Notification(R.drawable.app_icon, text, System.currentTimeMillis)
-    val i = PendingIntent.getActivity(this, 0, new Intent(this, classOf[MainActivity]), 0)
-    n.setLatestEventInfo(this, text, text, i)
-    return n
+    val notification = new Notification(R.drawable.app_icon, text, System.currentTimeMillis)
+    val intent = PendingIntent.getActivity(this, 0, new Intent(this, classOf[MainActivity]), 0)
+    notification.setLatestEventInfo(this, text, text, intent)
+    return notification
   }
 
   override def onStartCommand(intent: Intent, flags: Int, startId: Int): Int =
