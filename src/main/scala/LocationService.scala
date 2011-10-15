@@ -29,10 +29,6 @@ import android.widget.Toast
 class LocationService extends Service {
   private val ID = 1337
 
-  override def onStartCommand(intent: Intent, flags: Int, startId: Int): Int = Service.START_STICKY
-
-  override def onDestroy = Toast.makeText(this, "DESTRO", Toast.LENGTH_SHORT).show
-
   private var active = false
 
   def isActive: Boolean = active
@@ -54,6 +50,9 @@ class LocationService extends Service {
     n.setLatestEventInfo(this, text, text, i)
     return n
   }
+
+  override def onStartCommand(intent: Intent, flags: Int, startId: Int): Int =
+    Service.START_STICKY
 
   class LocalBinder extends Binder {
     def getService: LocationService = LocationService.this

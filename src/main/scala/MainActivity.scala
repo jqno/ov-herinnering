@@ -31,24 +31,14 @@ import Station._
 
 class MainActivity extends Activity with FindView {
   var station: Option[String] = None
-  var isBound = false
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
 
-    bindLocationService
+    startAndBindLocationService
     initializeAutoCompleter
     initializeEventHandlers
-  }
-
-  override def onDestroy {
-    super.onDestroy
-    locationService match {
-      case Some(service) =>
-        if (service.isActive) unbindLocationService
-      case None => ()
-    }
   }
 
   def start {
@@ -76,15 +66,10 @@ class MainActivity extends Activity with FindView {
     }
   }
 
-  def bindLocationService {
+  def startAndBindLocationService {
     val serviceIntent = new Intent(this, classOf[LocationService])
+    startService(serviceIntent)
     bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE)
-    isBound = true
-  }
-
-  def unbindLocationService = if (isBound) {
-    unbindService(connection)
-    isBound = false
   }
 
   def initializeAutoCompleter =
