@@ -24,19 +24,24 @@ package nl.jqno.ovherinnering
 import android.app.Activity
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget._
 import FindView._
+import Station._
 
 class MainActivity extends Activity with FindView {
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
 
+    val city = findView[AutoCompleteTextView](R.id.main_city)
+    city setAdapter new ArrayAdapter(this, R.layout.city_item, STATIONS)
+
     findView[Button](R.id.main_ok).onClick { _ =>
-      val city = findView[EditText](R.id.main_city)
-      Toast.makeText(this, city.getText.toString, Toast.LENGTH_LONG).show
+      val city = findView[EditText](R.id.main_city).getText.toString
+      if (STATIONS contains city)
+        Toast.makeText(this, city, Toast.LENGTH_LONG).show
+      else
+        Toast.makeText(this, "Hela wel iets fatsoenlijks intikken hoor.", Toast.LENGTH_LONG).show
     }
   }
 }

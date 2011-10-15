@@ -24,7 +24,9 @@ package nl.jqno.ovherinnering
 object Station {
   val LOCATIONS = Set(
     Station("Eindhoven", 51.442760, 5.479976),
-    Station("Tilburg", 51.560713, 5.083459)
+    Station("Tilburg", 51.560713, 5.083459),
+    Station("Tilburg Universiteit", 51.564940, 5.051840),
+    Station("Tilburg Reeshof", 51.573867, 4.993110)
   )
 
   val STATIONS = LOCATIONS.map(_.name).toArray.sortWith(_ < _)
