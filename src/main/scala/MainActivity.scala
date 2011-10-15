@@ -44,13 +44,11 @@ class MainActivity extends Activity with FindView {
   def start {
     val city = findView[EditText](R.id.main_city).getText.toString
     if (STATIONS contains city) {
-      locationService match {
-        case Some(service) =>
-          station = Some(city)
-          findView[TextView](R.id.main_text) setText city
-          service.activate
-          toggleUi
-        case None => ()
+      locationService foreach { s =>
+        station = Some(city)
+        findView[TextView](R.id.main_text) setText city
+        s.activate
+        toggleUi
       }
     }
     else
@@ -58,11 +56,9 @@ class MainActivity extends Activity with FindView {
   }
 
   def stop {
-    locationService match {
-      case Some(service) =>
-        service.deactivate
-        toggleUi
-      case None => ()
+    locationService foreach { s =>
+      s.deactivate
+      toggleUi
     }
   }
 
@@ -81,10 +77,7 @@ class MainActivity extends Activity with FindView {
   }
 
   def toggleUi {
-    val active = locationService match {
-      case Some(s) => s.isActive
-      case None    => false
-    }
+    val active = locationService map (_.isActive) getOrElse false
     find(R.id.main_active)   setVisibility (if (active) View.VISIBLE else View.GONE)
     find(R.id.main_inactive) setVisibility (if (active) View.GONE else View.VISIBLE)
   }
