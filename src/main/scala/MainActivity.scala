@@ -22,6 +22,7 @@
 package nl.jqno.ovherinnering
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget._
@@ -50,6 +51,7 @@ class MainActivity extends Activity with FindView {
       findView[TextView](R.id.main_text) setText city
       active = true
       toggle
+      startService(new Intent(this, classOf[LocationService]))
     }
     else
       Toast.makeText(this, "Hela wel iets fatsoenlijks intikken hoor.", Toast.LENGTH_LONG).show
@@ -58,6 +60,7 @@ class MainActivity extends Activity with FindView {
   def stop {
     active = false
     toggle
+    stopService(new Intent(this, classOf[LocationService]))
   }
 
   def toggle {
