@@ -36,6 +36,7 @@ class MainActivity extends Activity with FindView {
   var active = false
 
   private val ACTIVE_ID = "active"
+  private val STATION_ID = "station"
   private val NOTIFICATION_ID = 1337
   private val REQUEST_CODE = 12345
   private val INTERVAL_MINUTE = 60000
@@ -53,6 +54,7 @@ class MainActivity extends Activity with FindView {
 
     val prefs = getPreferences(MODE_PRIVATE)
     active = prefs.getBoolean(ACTIVE_ID, false)
+    station = Some(prefs.getString(STATION_ID, null))
     toggleUi
   }
 
@@ -61,14 +63,15 @@ class MainActivity extends Activity with FindView {
 
     val editor = getPreferences(MODE_PRIVATE).edit
     editor.putBoolean(ACTIVE_ID, active)
+    station foreach (editor.putString(STATION_ID, _))
     editor.commit
   }
 
   def start {
     val city = findView[EditText](R.id.main_city).getText.toString
     if (STATIONS contains city) {
-      findView[TextView](R.id.main_text) setText city
-      scheduleAlarm(Some(city))
+      station = Some(city)
+      scheduleAlarm
       active = true
       toggleUi
     }
@@ -82,15 +85,15 @@ class MainActivity extends Activity with FindView {
     toggleUi
   }
 
-  def scheduleAlarm(city: Option[String]) {
+  def scheduleAlarm {
     val cal = Calendar.getInstance
     cal.add(Calendar.SECOND, 5)
-    alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis, INTERVAL_MINUTE, broadcastIntent(city))
+    alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis, INTERVAL_MINUTE, broadcastIntent)
     notificationManager.notify(NOTIFICATION_ID, notification)
   }
 
   def cancelAlarm {
-    alarmManager.cancel(broadcastIntent(None))
+    alarmManager.cancel(broadcastIntent)
     notificationManager.cancel(NOTIFICATION_ID)
   }
 
@@ -103,14 +106,15 @@ class MainActivity extends Activity with FindView {
     return notification
   }
 
-  def broadcastIntent(city: Option[String]) = {
+  def broadcastIntent: PendingIntent = {
     val intent = new Intent(this, classOf[AlarmReceiver])
-    city foreach (intent.putExtra("station", _))
+    station foreach (intent.putExtra("station", _))
     PendingIntent.getBroadcast(this, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
   }
 
-  def initializeAutoCompleter =
+  def initializeAutoCompleter {
     findView[AutoCompleteTextView](R.id.main_city) setAdapter new ArrayAdapter(this, R.layout.city_item, STATIONS)
+  }
 
   def initializeEventHandlers {
     findView[Button](R.id.main_ok).onClick { _ => start }
@@ -126,5 +130,6 @@ class MainActivity extends Activity with FindView {
   def toggleUi {
     find(R.id.main_active)   setVisibility (if (active) View.VISIBLE else View.GONE)
     find(R.id.main_inactive) setVisibility (if (active) View.GONE else View.VISIBLE)
+    station foreach (findView[TextView](R.id.main_text) setText _)
   }
 }
