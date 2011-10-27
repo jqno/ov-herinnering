@@ -24,6 +24,7 @@ package nl.jqno.ovherinnering
 import android.app._
 import android.content._
 import android.content.Context._
+import android.location._
 import android.os._
 import android.view.View
 import android.widget._
@@ -33,13 +34,13 @@ import Station._
 
 class MainActivity extends Activity with FindView {
   var station: Option[String] = None
+  var locationListener: Option[LocationListener] = None
   var active = false
 
   private val ACTIVE_ID = "active"
   private val STATION_ID = "station"
   private val NOTIFICATION_ID = 1337
   private val REQUEST_CODE = 12345
-  private val INTERVAL_MINUTE = 60000
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
@@ -86,14 +87,14 @@ class MainActivity extends Activity with FindView {
   }
 
   def scheduleAlarm {
-    val cal = Calendar.getInstance
-    cal.add(Calendar.SECOND, 5)
-    alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis, INTERVAL_MINUTE, broadcastIntent)
-    notificationManager.notify(NOTIFICATION_ID, notification)
+    station foreach { city =>
+      locationListener = LocationListener.register(this, city)
+      notificationManager.notify(NOTIFICATION_ID, notification)
+    }
   }
 
   def cancelAlarm {
-    alarmManager.cancel(broadcastIntent)
+    locationListener foreach (_ unregister)
     notificationManager.cancel(NOTIFICATION_ID)
   }
 
@@ -106,12 +107,6 @@ class MainActivity extends Activity with FindView {
     return notification
   }
 
-  def broadcastIntent: PendingIntent = {
-    val intent = new Intent(this, classOf[AlarmReceiver])
-    station foreach (intent.putExtra("station", _))
-    PendingIntent.getBroadcast(this, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-  }
-
   def initializeAutoCompleter {
     findView[AutoCompleteTextView](R.id.main_city) setAdapter new ArrayAdapter(this, R.layout.city_item, STATIONS)
   }
@@ -120,9 +115,6 @@ class MainActivity extends Activity with FindView {
     findView[Button](R.id.main_ok).onClick { _ => start }
     findView[Button](R.id.main_stop).onClick { _ => stop }
   }
-
-  private def alarmManager: AlarmManager =
-    getSystemService(ALARM_SERVICE).asInstanceOf[AlarmManager]
 
   private def notificationManager: NotificationManager =
     getSystemService(NOTIFICATION_SERVICE).asInstanceOf[NotificationManager]
