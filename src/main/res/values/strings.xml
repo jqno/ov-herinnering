@@ -25,4 +25,6 @@
     <string name="main_stop">Stop</string>
     <string name="main_where_to">Waar stap je uit?</string>
     <string name="notification_active">We zijn er nog niet...</string>
+    <string name="notification_arrived">Vergeet niet uit te checken!</string>
+    <string name="notification_arrived_title">Je bent aangekomen</string>
 </resources>

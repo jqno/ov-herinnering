@@ -21,11 +21,13 @@
  */
 package nl.jqno.ovherinnering
 
+import android.app._
 import android.content._
 import android.location._
 import android.os.Bundle
 import android.widget.Toast
 import LocationListener._
+import Notification._
 import Stations._
 
 object LocationListener {
@@ -58,6 +60,8 @@ object LocationListener {
 }
 
 class LocationListener(context: Context, city: String) extends android.location.LocationListener {
+
+  val NOTIFICATION_ID = 86
   val refLocation = LocationListener.locationFor(city)
 
   def unregister = {
@@ -66,7 +70,7 @@ class LocationListener(context: Context, city: String) extends android.location.
 
   override def onLocationChanged(location: Location) {
     if ((location distanceTo refLocation) < THRESHOLD) {
-      //notify
+      notificationManager.notify(NOTIFICATION_ID, notification)
       //unregister
     }
   }
@@ -77,4 +81,18 @@ class LocationListener(context: Context, city: String) extends android.location.
 
   override def onProviderEnabled(provider: String) {}
   override def onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+
+  private def notification: Notification = {
+    val text = context.getText(R.string.notification_arrived)
+    val title = context.getText(R.string.notification_arrived_title)
+    val notification = new Notification(R.drawable.app_icon, text, System.currentTimeMillis)
+    val intent = PendingIntent.getActivity(context, 0, new Intent(context, classOf[MainActivity]), 0)
+    notification.setLatestEventInfo(context, title, text, intent)
+    notification.defaults |= DEFAULT_ALL
+    notification.flags |= FLAG_AUTO_CANCEL | FLAG_INSISTENT | FLAG_SHOW_LIGHTS
+    return notification
+  }
+
+  private def notificationManager: NotificationManager =
+    context.getSystemService(Context.NOTIFICATION_SERVICE).asInstanceOf[NotificationManager]
 }
