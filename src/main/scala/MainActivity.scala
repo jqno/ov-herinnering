@@ -34,7 +34,7 @@ import Stations._
 
 class MainActivity extends Activity with FindView {
   var station: Option[String] = None
-  var locationListener: Option[LocationListener] = None
+  var locationListeners: Set[LocationListener] = Set()
   var active = false
 
   private val ACTIVE_ID = "active"
@@ -88,13 +88,13 @@ class MainActivity extends Activity with FindView {
 
   def scheduleAlarm {
     station foreach { city =>
-      locationListener = LocationListener.register(this, city)
+      locationListeners = LocationListener.register(this, city)
       notificationManager.notify(NOTIFICATION_ID, notification)
     }
   }
 
   def cancelAlarm {
-    locationListener foreach (_ unregister)
+    locationListeners foreach (_ unregister)
     notificationManager.cancel(NOTIFICATION_ID)
   }
 

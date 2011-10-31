@@ -27,6 +27,7 @@ import android.location._
 import android.os.Bundle
 import android.widget.Toast
 import LocationListener._
+import LocationManager._
 import Notification._
 import Stations._
 
@@ -35,20 +36,18 @@ object LocationListener {
   private val INTERVAL_DISTANCE = 100.0f // meters
   private val THRESHOLD = 100.0f
 
-  def register(context: Context, city: String): Option[LocationListener] = {
+  def register(context: Context, city: String): Set[LocationListener] = {
     val lm = locationManager(context)
-    val provider = lm.getBestProvider(criteria, true)
-    if (provider == null) return None
-
-    val listener = new LocationListener(context, city)
-    lm.requestLocationUpdates(provider, INTERVAL_TIME, INTERVAL_DISTANCE, listener)
-    Some(listener)
+    val providers = Set(GPS_PROVIDER, NETWORK_PROVIDER)
+    providers map { provider =>
+      val listener = new LocationListener(context, city, provider)
+      lm.requestLocationUpdates(provider, INTERVAL_TIME, INTERVAL_DISTANCE, listener)
+      listener
+    }
   }
 
   private def locationManager(context: Context): LocationManager =
     context.getSystemService(Context.LOCATION_SERVICE).asInstanceOf[LocationManager]
-
-  private def criteria: Criteria = new Criteria
 
   def locationFor(city: String): Location = {
     val ref = LOCATIONS(city)
@@ -59,8 +58,7 @@ object LocationListener {
   }
 }
 
-class LocationListener(context: Context, city: String) extends android.location.LocationListener {
-
+class LocationListener(context: Context, city: String, provider: String) extends android.location.LocationListener {
   val NOTIFICATION_ID = 86
   val refLocation = LocationListener.locationFor(city)
 
@@ -76,10 +74,13 @@ class LocationListener(context: Context, city: String) extends android.location.
   }
 
   override def onProviderDisabled(provider: String) {
-    Toast.makeText(context, "Kan geen locatie-updates ontvangen!", Toast.LENGTH_SHORT).show
+    Toast.makeText(context, "disabled: " + provider, Toast.LENGTH_SHORT).show
   }
 
-  override def onProviderEnabled(provider: String) {}
+  override def onProviderEnabled(provider: String) {
+    Toast.makeText(context, "enabled: " + provider, Toast.LENGTH_SHORT).show
+  }
+
   override def onStatusChanged(provider: String, status: Int, extras: Bundle) {}
 
   private def notification: Notification = {
