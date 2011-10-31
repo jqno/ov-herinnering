@@ -26,33 +26,49 @@ import android.location._
 import android.os.Bundle
 import android.widget.Toast
 import LocationListener._
+import Stations._
 
 object LocationListener {
   private val INTERVAL_TIME = 60000 // milliseconds
   private val INTERVAL_DISTANCE = 100.0f // meters
+  private val THRESHOLD = 100.0f
 
   def register(context: Context, city: String): Option[LocationListener] = {
     val lm = locationManager(context)
     val provider = lm.getBestProvider(criteria, true)
     if (provider == null) return None
+
     val listener = new LocationListener(context, city)
     lm.requestLocationUpdates(provider, INTERVAL_TIME, INTERVAL_DISTANCE, listener)
     Some(listener)
   }
 
-  def locationManager(context: Context): LocationManager =
+  private def locationManager(context: Context): LocationManager =
     context.getSystemService(Context.LOCATION_SERVICE).asInstanceOf[LocationManager]
 
   private def criteria: Criteria = new Criteria
+
+  def locationFor(city: String): Location = {
+    val ref = LOCATIONS(city)
+    val result = new Location("ov-herinnering")
+    result setLatitude ref._1
+    result setLongitude ref._2
+    result
+  }
 }
 
 class LocationListener(context: Context, city: String) extends android.location.LocationListener {
+  val refLocation = LocationListener.locationFor(city)
+
   def unregister = {
     locationManager(context) removeUpdates this
   }
 
   override def onLocationChanged(location: Location) {
-    Toast.makeText(context, city + "\n" + location, Toast.LENGTH_SHORT).show
+    if ((location distanceTo refLocation) < THRESHOLD) {
+      //notify
+      //unregister
+    }
   }
 
   override def onProviderDisabled(provider: String) {

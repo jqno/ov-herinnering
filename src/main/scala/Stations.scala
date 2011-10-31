@@ -21,19 +21,14 @@
  */
 package nl.jqno.ovherinnering
 
-object Station {
-  val LOCATIONS = Set(
-    Station("Eindhoven", 51.442760, 5.479976),
-    Station("Tilburg", 51.560713, 5.083459),
-    Station("Tilburg Universiteit", 51.564940, 5.051840),
-    Station("Tilburg Reeshof", 51.573867, 4.993110)
+object Stations {
+  val LOCATIONS = Map(
+    "Eindhoven" -> (51.442760, 5.479976),
+    "Tilburg" -> (51.560713, 5.083459),
+    "Tilburg Reeshof" -> (51.573867, 4.993110),
+    "Tilburg Universiteit" -> (51.564940, 5.051840)
   )
 
-  val STATIONS = LOCATIONS.map(_.name).toArray.sortWith(_ < _)
+  val STATIONS = LOCATIONS.keys.toArray.sortWith(_ < _)
 }
 
-case class Station(
-  val name: String,
-  val latitude: Double,
-  val longitude: Double
-);

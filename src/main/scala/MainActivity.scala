@@ -30,7 +30,7 @@ import android.view.View
 import android.widget._
 import java.util.Calendar
 import FindView._
-import Station._
+import Stations._
 
 class MainActivity extends Activity with FindView {
   var station: Option[String] = None
