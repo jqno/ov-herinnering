@@ -33,12 +33,9 @@ import FindView._
 import Stations._
 
 class MainActivity extends Activity with FindView {
-  var station: Option[String] = None
+  lazy val state = new State(getPreferences(MODE_PRIVATE))
   var locationListeners: Set[LocationListener] = Set()
-  var active = false
 
-  private val ACTIVE_ID = "active"
-  private val STATION_ID = "station"
   private val NOTIFICATION_ID = 1337
   private val REQUEST_CODE = 12345
 
@@ -52,28 +49,20 @@ class MainActivity extends Activity with FindView {
 
   override def onResume {
     super.onResume
-
-    val prefs = getPreferences(MODE_PRIVATE)
-    active = prefs.getBoolean(ACTIVE_ID, false)
-    station = Some(prefs.getString(STATION_ID, null))
+    state.restore
     toggleUi
   }
 
   override def onPause {
     super.onPause
-
-    val editor = getPreferences(MODE_PRIVATE).edit
-    editor.putBoolean(ACTIVE_ID, active)
-    station foreach (editor.putString(STATION_ID, _))
-    editor.commit
+    state.save
   }
 
   def start {
     val city = findView[EditText](R.id.main_city).getText.toString
     if (STATIONS contains city) {
-      station = Some(city)
+      state.activate(city)
       scheduleAlarm
-      active = true
       toggleUi
     }
     else
@@ -82,15 +71,13 @@ class MainActivity extends Activity with FindView {
 
   def stop {
     cancelAlarm
-    active = false
+    state.deactivate
     toggleUi
   }
 
   def scheduleAlarm {
-    station foreach { city =>
-      locationListeners = LocationListener.register(this, city)
-      notificationManager.notify(NOTIFICATION_ID, notification)
-    }
+    locationListeners = LocationListener.register(this, state)
+    notificationManager.notify(NOTIFICATION_ID, notification)
   }
 
   def cancelAlarm {
@@ -120,8 +107,9 @@ class MainActivity extends Activity with FindView {
     getSystemService(NOTIFICATION_SERVICE).asInstanceOf[NotificationManager]
 
   def toggleUi {
-    find(R.id.main_active)   setVisibility (if (active) View.VISIBLE else View.GONE)
-    find(R.id.main_inactive) setVisibility (if (active) View.GONE else View.VISIBLE)
-    station foreach (findView[TextView](R.id.main_text) setText _)
+    val a = state.isActive
+    find(R.id.main_active)   setVisibility (if (a) View.VISIBLE else View.GONE)
+    find(R.id.main_inactive) setVisibility (if (a) View.GONE else View.VISIBLE)
+    findView[TextView](R.id.main_text).setText(state stationText)
   }
 }

@@ -36,11 +36,11 @@ object LocationListener {
   private val INTERVAL_DISTANCE = 100.0f // meters
   private val THRESHOLD = 100.0f
 
-  def register(context: Context, city: String): Set[LocationListener] = {
+  def register(context: Context, state: State): Set[LocationListener] = {
     val lm = locationManager(context)
     val providers = Set(GPS_PROVIDER, NETWORK_PROVIDER)
     providers map { provider =>
-      val listener = new LocationListener(context, city, provider)
+      val listener = new LocationListener(context, state, provider)
       lm.requestLocationUpdates(provider, INTERVAL_TIME, INTERVAL_DISTANCE, listener)
       listener
     }
@@ -48,26 +48,17 @@ object LocationListener {
 
   private def locationManager(context: Context): LocationManager =
     context.getSystemService(Context.LOCATION_SERVICE).asInstanceOf[LocationManager]
-
-  def locationFor(city: String): Location = {
-    val ref = LOCATIONS(city)
-    val result = new Location("ov-herinnering")
-    result setLatitude ref._1
-    result setLongitude ref._2
-    result
-  }
 }
 
-class LocationListener(context: Context, city: String, provider: String) extends android.location.LocationListener {
+class LocationListener(context: Context, state: State, provider: String) extends android.location.LocationListener {
   val NOTIFICATION_ID = 86
-  val refLocation = LocationListener.locationFor(city)
 
   def unregister = {
     locationManager(context) removeUpdates this
   }
 
   override def onLocationChanged(location: Location) {
-    if ((location distanceTo refLocation) < THRESHOLD) {
+    if ((location distanceTo state.location) < THRESHOLD) {
       notificationManager.notify(NOTIFICATION_ID, notification)
       //unregister
     }
