@@ -21,47 +21,14 @@
  */
 package nl.jqno.ovherinnering
 
-import android.app._
-import android.content._
-import android.location._
+import android.content.Context
+import android.location.Location
 import android.os.Bundle
 import android.widget.Toast
-import LocationListener._
-import LocationManager._
-import Notification._
-import Stations._
 
-object LocationListener {
-  private val INTERVAL_TIME = 60000 // milliseconds
-  private val INTERVAL_DISTANCE = 100.0f // meters
-  private val THRESHOLD = 100.0f
-
-  def register(context: Context, state: State): Set[LocationListener] = {
-    val lm = locationManager(context)
-    val providers = Set(GPS_PROVIDER, NETWORK_PROVIDER)
-    providers map { provider =>
-      val listener = new LocationListener(context, state, provider)
-      lm.requestLocationUpdates(provider, INTERVAL_TIME, INTERVAL_DISTANCE, listener)
-      listener
-    }
-  }
-
-  private def locationManager(context: Context): LocationManager =
-    context.getSystemService(Context.LOCATION_SERVICE).asInstanceOf[LocationManager]
-}
-
-class LocationListener(context: Context, state: State, provider: String) extends android.location.LocationListener {
-  val NOTIFICATION_ID = 86
-
-  def unregister = {
-    locationManager(context) removeUpdates this
-  }
-
+class LocationListener(context: Context, update: Location => Unit) extends android.location.LocationListener {
   override def onLocationChanged(location: Location) {
-    if ((location distanceTo state.location) < THRESHOLD) {
-      notificationManager.notify(NOTIFICATION_ID, notification)
-      //unregister
-    }
+    update(location)
   }
 
   override def onProviderDisabled(provider: String) {
@@ -73,18 +40,4 @@ class LocationListener(context: Context, state: State, provider: String) extends
   }
 
   override def onStatusChanged(provider: String, status: Int, extras: Bundle) {}
-
-  private def notification: Notification = {
-    val text = context.getText(R.string.notification_arrived)
-    val title = context.getText(R.string.notification_arrived_title)
-    val notification = new Notification(R.drawable.app_icon, text, System.currentTimeMillis)
-    val intent = PendingIntent.getActivity(context, 0, new Intent(context, classOf[MainActivity]), 0)
-    notification.setLatestEventInfo(context, title, text, intent)
-    notification.defaults |= DEFAULT_ALL
-    notification.flags |= FLAG_AUTO_CANCEL | FLAG_INSISTENT | FLAG_SHOW_LIGHTS
-    return notification
-  }
-
-  private def notificationManager: NotificationManager =
-    context.getSystemService(Context.NOTIFICATION_SERVICE).asInstanceOf[NotificationManager]
 }

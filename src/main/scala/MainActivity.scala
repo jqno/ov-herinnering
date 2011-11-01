@@ -30,7 +30,7 @@ import FindView._
 import Stations._
 
 class MainActivity extends Activity with FindView {
-  lazy val state = new State(getPreferences(MODE_PRIVATE))
+  lazy val state  = new State(getPreferences(MODE_PRIVATE))
   lazy val engine = new Engine(this, state)
 
   override def onCreate(savedInstanceState: Bundle) {
@@ -72,8 +72,8 @@ class MainActivity extends Activity with FindView {
   }
 
   private def initializeEventHandlers {
-    findView[Button](R.id.main_ok).onClick { _ => start }
-    findView[Button](R.id.main_stop).onClick { _ => stop }
+    findView[Button](R.id.main_ok).onClick   { _ => start }
+    findView[Button](R.id.main_stop).onClick { _ => stop  }
   }
 
   private def toggleUi {

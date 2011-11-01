@@ -23,6 +23,7 @@ package nl.jqno.ovherinnering
 
 object Stations {
   val LOCATIONS = Map(
+    "T DUMMY" -> (1.0, 1.0),
     "Eindhoven" -> (51.442760, 5.479976),
     "Tilburg" -> (51.560713, 5.083459),
     "Tilburg Reeshof" -> (51.573867, 4.993110),
