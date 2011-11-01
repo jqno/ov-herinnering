@@ -21,8 +21,8 @@
  */
 package nl.jqno.ovherinnering
 
-import android.content._
-import android.location._
+import android.content.SharedPreferences
+import android.location.Location
 import Stations._
 
 class State(prefs: SharedPreferences) {
@@ -32,6 +32,8 @@ class State(prefs: SharedPreferences) {
   def isActive: Boolean = station isDefined
 
   def stationText: String = station getOrElse ""
+
+  def isValidStation(s: String): Boolean = STATIONS contains s
   
   def location: Location = {
     if (station isEmpty)
@@ -43,11 +45,11 @@ class State(prefs: SharedPreferences) {
     result
   }
 
-  def activate(city: String) {
-    station = Some(city)
+  def setStation(s: String) {
+    station = Some(s)
   }
 
-  def deactivate {
+  def unsetStation {
     station = None
   }
 
